@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button';
+import { AddURLButton } from '@/features/AddURLButton/AddURLButton';
 
 export default function Home() {
   return (
-    <div>
-      <Button>Hello My Home</Button>
-    </div>
+    <>
+      <AddURLButton />
+    </>
   );
 }
