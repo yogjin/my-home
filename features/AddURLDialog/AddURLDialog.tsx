@@ -10,14 +10,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DialogProps } from '@/components/ui/dialog';
 
-interface AddURLDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface AddURLDialogProps extends DialogProps {
   onAddURL: (url: string, name: string) => void;
 }
 
-function AddURLDialog({ isOpen, onClose, onAddURL }: AddURLDialogProps) {
+function AddURLDialog({ isOpen, onClose, onAddURL, onExit }: AddURLDialogProps) {
   const [url, setUrl] = useState('');
   const [name, setName] = useState('');
 
@@ -32,10 +31,11 @@ function AddURLDialog({ isOpen, onClose, onAddURL }: AddURLDialogProps) {
     onAddURL(url, name);
     clearValues();
     onClose();
+    onExit?.();
   };
 
   return (
-    <DialogContent isOpen={isOpen} onClose={onClose} className="sm:max-w-[425px]">
+    <DialogContent isOpen={isOpen} onClose={onClose} className="sm:max-w-[425px]" onExit={onExit}>
       <DialogHeader>
         <DialogTitle>외부 링크 추가하기</DialogTitle>
         <DialogDescription>URL을 입력해주세요.</DialogDescription>
