@@ -1,30 +1,55 @@
 'use client';
 
-import * as React from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { forwardRef, HTMLAttributes, MouseEvent, useState } from 'react';
 
-interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {
+interface DialogContentProps extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean;
   onClose: () => void;
+  onExit?: () => void;
 }
 
-const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
-  ({ className, children, isOpen, onClose, ...props }, ref) => {
-    if (!isOpen) return null;
+export type DialogProps = Pick<DialogContentProps, 'isOpen' | 'onClose' | 'onExit'>;
 
-    const handleBackdropClick = (e: React.MouseEvent) => {
+const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
+  ({ className, children, isOpen, onClose, onExit, ...props }, ref) => {
+    const [isClosing, setIsClosing] = useState(false);
+
+    if (!isOpen && !isClosing) return null;
+
+    const handleClose = () => {
+      setIsClosing(true);
+      onClose();
+    };
+
+    const handleAnimationEnd = () => {
+      if (isClosing) {
+        setIsClosing(false);
+        onExit?.();
+      }
+    };
+
+    const handleBackdropClick = (e: MouseEvent<HTMLDivElement>) => {
       if (e.target === e.currentTarget) {
-        onClose();
+        handleClose();
       }
     };
 
     return (
-      <div className="fixed inset-0 z-50 bg-black/70" onClick={handleBackdropClick}>
+      <div
+        className="fixed inset-0 z-50 bg-black/70 transition-opacity duration-300"
+        onClick={handleBackdropClick}
+      >
         <div
           ref={ref}
+          onAnimationEnd={handleAnimationEnd}
           className={cn(
             'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg sm:rounded-lg',
+            'transition-transform duration-150',
+            !isClosing
+              ? 'animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-[48%]'
+              : 'animate-out fade-out-0 zoom-out-95 slide-out-to-left-1/2 slide-out-to-top-[48%]',
             className
           )}
           {...props}
@@ -42,6 +67,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
     );
   }
 );
+
 DialogContent.displayName = 'DialogContent';
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
@@ -57,7 +83,7 @@ const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
 );
 DialogFooter.displayName = 'DialogFooter';
 
-const DialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
+const DialogTitle = forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
     <h2
       ref={ref}
@@ -68,7 +94,7 @@ const DialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HT
 );
 DialogTitle.displayName = 'DialogTitle';
 
-const DialogDescription = React.forwardRef<
+const DialogDescription = forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
